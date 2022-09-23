@@ -1,0 +1,16 @@
+version: '3'
+services:
+  web:
+    build:
+      target: workspace-image
+    ports:
+      - 5061:5068
+    environment:
+      port: 5068
+    env_file:
+      - .env
+    volumes:
+      - .:/usr/src/app
+      - /app:/app
+    depends_on:
+      - db
