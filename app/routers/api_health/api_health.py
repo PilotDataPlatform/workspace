@@ -17,9 +17,6 @@ from fastapi import APIRouter
 from fastapi.responses import Response
 from fastapi_utils import cbv
 
-from app.config import ConfigClass
-from app.resources.error_handler import APIException
-
 logger = LoggerFactory('api_health').get_logger()
 
 router = APIRouter(tags=['Health'])
@@ -32,5 +29,5 @@ class Health:
         summary='Health check',
     )
     async def get(self):
-        logger.info('Starting api_health checks for lxd service')
+        logger.debug('Starting api_health checks for workspace service')
         return Response(status_code=204)

@@ -28,7 +28,7 @@ def create_app():
         title='Service Workspaces',
         description='Service Workspaces',
         docs_url='/v1/api-doc',
-        version=ConfigClass.version
+        version=ConfigClass.version,
     )
 
     app.add_middleware(

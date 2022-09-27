@@ -23,4 +23,4 @@ router = APIRouter()
 @router.get('/')
 async def get():
     """For testing if service's up."""
-    return {'message': 'Service LXD, Version: ' + ConfigClass.version}
+    return {'message': 'Service Workspace, Version: ' + ConfigClass.version}

@@ -12,16 +12,20 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from common import LoggerFactory
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from fastapi_utils.cbv import cbv
-from common import LoggerFactory
-from app.models.models_permission import GetPermission, GetPermissionResponse, PostPermission
-from app.config import ConfigClass
-from app.resources.error_handler import APIException
 from guacapy import Guacamole
-from app.routers.api_connection.utils import format_connection_name
 
+from app.config import ConfigClass
+from app.models.models_permission import (
+    GetPermission,
+    GetPermissionResponse,
+    PostPermission,
+)
+from app.resources.error_handler import APIException
+from app.routers.api_guacamole.utils import format_connection_name
 
 router = APIRouter()
 API_TAG = 'Permission'
@@ -29,53 +33,51 @@ API_TAG = 'Permission'
 
 @cbv(router)
 class Permission:
-    _logger = LoggerFactory('api_permisison').get_logger()
+    logger = LoggerFactory('api_permisison').get_logger()
 
     @router.get(
         '/guacamole/permission',
         summary='Get permissons on a connection for a user',
         tags=[API_TAG],
-        response_model=GetPermissionResponse
+        response_model=GetPermissionResponse,
     )
     def get(self, data: GetPermission = Depends(GetPermission)):
         guacamole_client = Guacamole(
             hostname=ConfigClass.GUACAMOLE_HOSTNAME,
             username=ConfigClass.GUACAMOLE_USERNAME,
             password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH
+            url_path=ConfigClass.GUACAMOLE_URL_PATH,
         )
         connection = guacamole_client.get_connection_by_name(format_connection_name(data.container_code))
         permissions = guacamole_client.get_permissions(data.username)
-        connection_permission = permissions["connectionPermissions"].get(connection["identifier"], [])
+        connection_permission = permissions['connectionPermissions'].get(connection['identifier'], [])
         api_response = GetPermissionResponse()
-        api_response.result = {"container_code": data.container_code, "permissions": connection_permission}
+        api_response.result = {'container_code': data.container_code, 'permissions': connection_permission}
         return api_response.json_response()
 
-    @router.post(
-        '/guacamole/permission',
-        summary='Add permissions for a user on a connection',
-        tags=[API_TAG]
-    )
+    @router.post('/guacamole/permission', summary='Add permissions for a user on a connection', tags=[API_TAG])
     def post(self, data: PostPermission):
         guacamole_client = Guacamole(
             hostname=ConfigClass.GUACAMOLE_HOSTNAME,
             username=ConfigClass.GUACAMOLE_USERNAME,
             password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH
+            url_path=ConfigClass.GUACAMOLE_URL_PATH,
         )
         connection = guacamole_client.get_connection_by_name(format_connection_name(data.container_code))
-        connection_id = connection["identifier"]
+        connection_id = connection['identifier']
         payload = []
         for permission in data.permissions:
-            payload.append({
-                "op": "add",
-                "path": f"/connectionPermissions/{connection_id}",
-                "value": permission,
-            })
+            payload.append(
+                {
+                    'op': data.operation,
+                    'path': f'/connectionPermissions/{connection_id}',
+                    'value': permission,
+                }
+            )
         response = guacamole_client.grant_permission(data.username, payload)
         if response.status_code != 204:
+            self.logger.error(f'Erroring updating guacamole permissions: {response}')
             raise APIException(
-                status_code=response.status_code,
-                error_msg="Error updating guacamole permisisons: {response.json()}"
+                status_code=response.status_code, error_msg='Error updating guacamole permisisons: {response.json()}'
             )
-        return JSONResponse("success")
+        return JSONResponse('success')

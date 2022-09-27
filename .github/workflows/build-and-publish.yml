@@ -151,4 +151,3 @@ jobs:
          result=$(curl --silent --user jenkins:${CI_API_TOKEN} -X GET "${CI_EXTERNAL_URL}/job/Infra/job/UpdateAppVersion/${{ env.build_number }}/api/json" | grep -Eo '"result"[^,]*' | grep -Eo '[^:]*$' |  tr -d '"')
          while [[ "$result" != "SUCCESS" && "$result" != "FAILURE" && $timer -lt $timeout ]]; do result=$(curl --silent --user jenkins:${CI_API_TOKEN} -X GET "${CI_EXTERNAL_URL}/job/Infra/job/UpdateAppVersion/${{ env.build_number }}/api/json" | grep -Eo '"result"[^,]*' | grep -Eo '[^:]*$' |  tr -d '"') && sleep $step && ((timer=timer+step)) && echo "result=$result in $timer seconds"; done
          if [ "$result" != "SUCCESS" ]; then exit 1; fi
-

@@ -15,7 +15,7 @@
 from fastapi import FastAPI
 
 from .routers import api_root
-from .routers.api_connection import api_connection, api_permission
+from .routers.api_guacamole import api_connection, api_permission
 from .routers.api_health import api_health
 
 

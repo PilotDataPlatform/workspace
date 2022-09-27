@@ -46,10 +46,10 @@ def load_vault_settings(settings: BaseSettings) -> Dict[str, Any]:
 class Settings(BaseSettings):
     version = '0.1.0'
     APP_NAME: str = 'workspace_service'
-    HOST: str = "0.0.0.0"
+    HOST: str = '0.0.0.0'
     PORT: int = 5068
 
-    WORKSPACE_PREFIX: str = "workspace"
+    WORKSPACE_PREFIX: str = 'workspace'
 
     GUACAMOLE_HOSTNAME: str
     GUACAMOLE_USERNAME: str

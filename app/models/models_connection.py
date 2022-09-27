@@ -12,8 +12,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from pydantic import BaseModel
-from pydantic import Field
+from pydantic import BaseModel, Field
+
 from app.models.base import APIResponse
 
 
@@ -22,7 +22,7 @@ class GetConnection(BaseModel):
 
 
 class GetConnectionResponse(APIResponse):
-    result: dict = Field({}, example={})
+    result: dict = Field({}, example={'id': '9', 'name': 'workspace_indoctestproject', 'protocol': 'ssh'})
 
 
 class PostConnection(BaseModel):
@@ -30,3 +30,7 @@ class PostConnection(BaseModel):
     username: str
     port: int
     hostname: str
+
+
+class DeleteConnection(BaseModel):
+    container_code: str

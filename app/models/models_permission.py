@@ -12,9 +12,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from pydantic import BaseModel
-from pydantic import Field
-from app.models.base import APIResponse
+from pydantic import BaseModel, Field, validator
+
+from app.models.base import APIResponse, EAPIResponseCode
+from app.resources.error_handler import APIException
 
 
 class GetPermission(BaseModel):
@@ -30,3 +31,10 @@ class PostPermission(BaseModel):
     container_code: str
     username: str
     permissions: list[str]
+    operation: str
+
+    @validator('operation')
+    def validate_operation(cls, v):
+        if v not in ['add', 'remove']:
+            raise APIException(error_msg='Invalid operation', status_code=EAPIResponseCode.bad_request)
+        return v
