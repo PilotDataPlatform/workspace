@@ -6,7 +6,7 @@ authors = ["gregmccoy <greg@gkmc.ca>"]
 license = "AGPL 3.0"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9"
 fastapi = "^0.85.0"
 httpx = "^0.23.0"
 pilot-platform-common = "^0.0.48"
