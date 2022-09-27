@@ -22,6 +22,7 @@ from app.config import ConfigClass
 from app.models.base import APIResponse
 from app.models.models_connection import (
     DeleteConnection,
+    DeleteConnectionResponse,
     GetConnection,
     GetConnectionResponse,
     PostConnection,
@@ -93,7 +94,7 @@ class Connection:
         '/guacamole/connection',
         summary='Get a connection by container_code',
         tags=[API_TAG],
-        response_model=GetConnectionResponse,
+        response_model=DeleteConnectionResponse,
     )
     def delete(self, data: DeleteConnection = Depends(DeleteConnection)):
         guacamole_client = Guacamole(

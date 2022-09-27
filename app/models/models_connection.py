@@ -34,3 +34,6 @@ class PostConnection(BaseModel):
 
 class DeleteConnection(BaseModel):
     container_code: str
+
+class DeleteConnectionResponse(APIResponse):
+    result: str = Field("", example="success")
