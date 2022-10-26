@@ -20,15 +20,11 @@ from requests.exceptions import HTTPError
 
 from app.config import ConfigClass
 from app.models.base import APIResponse
-from app.models.models_connection import (
-    DeleteConnection,
-    DeleteConnectionResponse,
-    GetConnection,
-    GetConnectionResponse,
-    PostConnection,
-)
+from app.models.models_connection import (DeleteConnection,
+                                          DeleteConnectionResponse,
+                                          GetConnection, GetConnectionResponse,
+                                          PostConnection)
 from app.resources.error_handler import APIException
-from app.routers.api_guacamole.utils import format_connection_name
 
 router = APIRouter()
 API_TAG = 'Connection'
@@ -40,7 +36,7 @@ class Connection:
 
     @router.get(
         '/guacamole/connection',
-        summary='Get a connection by container_code',
+        summary='Get connections for a project, optionally also by connection name ',
         tags=[API_TAG],
         response_model=GetConnectionResponse,
     )
@@ -49,15 +45,18 @@ class Connection:
             hostname=ConfigClass.GUACAMOLE_HOSTNAME,
             username=ConfigClass.GUACAMOLE_USERNAME,
             password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH,
+            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
         )
-        connection = guacamole_client.get_connection_by_name(format_connection_name(data.container_code))
+        connections = guacamole_client.get_connections()
+        result_containers = []
+        for connection in connections['childConnections']:
+            result_containers.append({
+                'id': connection['identifier'],
+                'name': connection['name'],
+                'protocol': connection['protocol'],
+            })
         api_response = GetConnectionResponse()
-        api_response.result = {
-            'id': connection['identifier'],
-            'name': connection['name'],
-            'protocol': connection['protocol'],
-        }
+        api_response.result = result_containers
         return api_response.json_response()
 
     @router.post('/guacamole/connection', summary='Add a new connection', tags=[API_TAG])
@@ -66,11 +65,10 @@ class Connection:
             hostname=ConfigClass.GUACAMOLE_HOSTNAME,
             username=ConfigClass.GUACAMOLE_USERNAME,
             password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH,
+            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
         )
-        connection_name = format_connection_name(data.container_code)
         payload = {
-            'name': connection_name,
+            'name': data.connection_name,
             'parentIdentifier': 'ROOT',
             'protocol': 'ssh',
             'parameters': {
@@ -101,9 +99,9 @@ class Connection:
             hostname=ConfigClass.GUACAMOLE_HOSTNAME,
             username=ConfigClass.GUACAMOLE_USERNAME,
             password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH,
+            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
         )
-        connection = guacamole_client.get_connection_by_name(format_connection_name(data.container_code))
+        connection = guacamole_client.get_connection_by_name(data.connection_name)
         try:
             guacamole_client.delete_connection(connection['identifier'])
         except HTTPError as e:

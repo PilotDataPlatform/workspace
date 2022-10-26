@@ -25,6 +25,7 @@ def test_get_permission_200(test_client, guacapy_client_mock):
 
 def test_grant_permission_200(test_client, guacapy_client_mock):
     payload = {
+        'connection_name': 'Test connection',
         'container_code': 'unittest',
         'username': 'unittest',
         'permissions': ['READ'],
@@ -36,6 +37,7 @@ def test_grant_permission_200(test_client, guacapy_client_mock):
 
 def test_grant_permission_400(test_client, guacapy_client_mock_grant_permission_400):
     payload = {
+        'connection_name': 'Test connection',
         'container_code': 'unittest',
         'username': 'unittest',
         'permissions': ['READ'],

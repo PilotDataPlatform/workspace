@@ -28,6 +28,7 @@ class GetPermissionResponse(APIResponse):
 
 
 class PostPermission(BaseModel):
+    connection_name: str
     container_code: str
     username: str
     permissions: list[str]
