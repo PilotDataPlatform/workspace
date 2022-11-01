@@ -27,6 +27,7 @@ class GetConnectionResponse(APIResponse):
 
 class PostConnection(BaseModel):
     container_code: str
+    connection_name: str = ""
     username: str
     port: int
     hostname: str
@@ -34,6 +35,8 @@ class PostConnection(BaseModel):
 
 class DeleteConnection(BaseModel):
     container_code: str
+    connection_name: str
+
 
 class DeleteConnectionResponse(APIResponse):
     result: str = Field("", example="success")

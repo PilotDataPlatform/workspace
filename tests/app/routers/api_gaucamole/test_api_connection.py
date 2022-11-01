@@ -37,6 +37,7 @@ def test_create_connection_400(test_client, guacapy_client_mock_connection_excep
 def test_remove_connection_200(test_client, guacapy_client_mock):
     payload = {
         'container_code': 'unittest',
+        'connection_name': 'Test connection',
     }
     response = test_client.delete('/v1/guacamole/connection', params=payload)
     assert response.status_code == 200
@@ -45,7 +46,7 @@ def test_remove_connection_200(test_client, guacapy_client_mock):
 def test_remove_connection_400(test_client, guacapy_client_mock_connection_except):
     payload = {
         'container_code': 'unittest',
+        'connection_name': 'Test connection',
     }
     response = test_client.delete('/v1/guacamole/connection', params=payload)
-    print(response)
     assert response.status_code == 400

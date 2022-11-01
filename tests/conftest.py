@@ -44,6 +44,11 @@ def guacapy_mock(mocker, response_code=204, connection_exception=False):
         def __init__(self, *args, **kwargs):
             pass
 
+        def get_connections(self, *args, **kwargs):
+            return {
+                'childConnections': [GUACAMOLE_CONNECTION]
+            }
+
         def get_connection_by_name(self, *args, **kwargs):
             return GUACAMOLE_CONNECTION
 

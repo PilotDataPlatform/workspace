@@ -19,13 +19,9 @@ from fastapi_utils.cbv import cbv
 from guacapy import Guacamole
 
 from app.config import ConfigClass
-from app.models.models_permission import (
-    GetPermission,
-    GetPermissionResponse,
-    PostPermission,
-)
+from app.models.models_permission import (GetPermission, GetPermissionResponse,
+                                          PostPermission)
 from app.resources.error_handler import APIException
-from app.routers.api_guacamole.utils import format_connection_name
 
 router = APIRouter()
 API_TAG = 'Permission'
@@ -46,13 +42,15 @@ class Permission:
             hostname=ConfigClass.GUACAMOLE_HOSTNAME,
             username=ConfigClass.GUACAMOLE_USERNAME,
             password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH,
+            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
         )
-        connection = guacamole_client.get_connection_by_name(format_connection_name(data.container_code))
+        connections = guacamole_client.get_connections()
         permissions = guacamole_client.get_permissions(data.username)
-        connection_permission = permissions['connectionPermissions'].get(connection['identifier'], [])
+        result = {}
+        for connection in connections['childConnections']:
+            result[connection['name']] = permissions['connectionPermissions'].get(connection['identifier'], [])
         api_response = GetPermissionResponse()
-        api_response.result = {'container_code': data.container_code, 'permissions': connection_permission}
+        api_response.result = {'container_code': data.container_code, 'permissions': result}
         return api_response.json_response()
 
     @router.post('/guacamole/permission', summary='Add permissions for a user on a connection', tags=[API_TAG])
@@ -61,9 +59,9 @@ class Permission:
             hostname=ConfigClass.GUACAMOLE_HOSTNAME,
             username=ConfigClass.GUACAMOLE_USERNAME,
             password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH,
+            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
         )
-        connection = guacamole_client.get_connection_by_name(format_connection_name(data.container_code))
+        connection = guacamole_client.get_connection_by_name(data.connection_name)
         connection_id = connection['identifier']
         payload = []
         for permission in data.permissions:
