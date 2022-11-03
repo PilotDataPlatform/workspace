@@ -22,6 +22,7 @@ from app.config import ConfigClass
 from app.models.models_permission import (GetPermission, GetPermissionResponse,
                                           PostPermission)
 from app.resources.error_handler import APIException
+from app.commons.guacamole_client import get_guacamole_client
 
 router = APIRouter()
 API_TAG = 'Permission'
@@ -38,12 +39,7 @@ class Permission:
         response_model=GetPermissionResponse,
     )
     def get(self, data: GetPermission = Depends(GetPermission)):
-        guacamole_client = Guacamole(
-            hostname=ConfigClass.GUACAMOLE_HOSTNAME,
-            username=ConfigClass.GUACAMOLE_USERNAME,
-            password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
-        )
+        guacamole_client = get_guacamole_client(data.container_code)
         connections = guacamole_client.get_connections()
         permissions = guacamole_client.get_permissions(data.username)
         result = {}
@@ -55,12 +51,7 @@ class Permission:
 
     @router.post('/guacamole/permission', summary='Add permissions for a user on a connection', tags=[API_TAG])
     def post(self, data: PostPermission):
-        guacamole_client = Guacamole(
-            hostname=ConfigClass.GUACAMOLE_HOSTNAME,
-            username=ConfigClass.GUACAMOLE_USERNAME,
-            password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
-        )
+        guacamole_client = get_guacamole_client(data.container_code)
         connection = guacamole_client.get_connection_by_name(data.connection_name)
         connection_id = connection['identifier']
         payload = []

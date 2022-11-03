@@ -32,7 +32,7 @@ GUACAMOLE_PERMISSION = {
 }
 
 
-def guacapy_mock(mocker, response_code=204, connection_exception=False):
+def guacapy_mock(mocker, response_code=204, connection_exception=False, init_exception=False):
     class MockResponse:
         def __init__(self, response_code=response_code):
             self.status_code = response_code
@@ -42,7 +42,9 @@ def guacapy_mock(mocker, response_code=204, connection_exception=False):
 
     class GuacapyClientMock:
         def __init__(self, *args, **kwargs):
-            pass
+            if init_exception:
+                response = MockResponse(response_code=503)
+                raise HTTPError('', 503, 'Testing', response=response)
 
         def get_connections(self, *args, **kwargs):
             return {
@@ -70,8 +72,7 @@ def guacapy_mock(mocker, response_code=204, connection_exception=False):
                 raise HTTPError('', 400, 'Testing', response=response)
             return MockResponse(response_code=response_code)
 
-    mocker.patch('app.routers.api_guacamole.api_connection.Guacamole', GuacapyClientMock)
-    mocker.patch('app.routers.api_guacamole.api_permission.Guacamole', GuacapyClientMock)
+    mocker.patch('app.commons.guacamole_client.Guacamole', GuacapyClientMock)
 
 
 @pytest.fixture
@@ -82,6 +83,11 @@ def guacapy_client_mock_connection_except(mocker):
 @pytest.fixture
 def guacapy_client_mock_grant_permission_400(mocker):
     guacapy_mock(mocker, response_code=400)
+
+
+@pytest.fixture
+def guacapy_client_mock_no_connection(mocker):
+    guacapy_mock(mocker, init_exception=True, response_code=503)
 
 
 @pytest.fixture

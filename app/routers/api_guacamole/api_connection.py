@@ -25,6 +25,7 @@ from app.models.models_connection import (DeleteConnection,
                                           GetConnection, GetConnectionResponse,
                                           PostConnection)
 from app.resources.error_handler import APIException
+from app.commons.guacamole_client import get_guacamole_client
 
 router = APIRouter()
 API_TAG = 'Connection'
@@ -36,17 +37,12 @@ class Connection:
 
     @router.get(
         '/guacamole/connection',
-        summary='Get connections for a project, optionally also by connection name ',
+        summary='Get connections for a project',
         tags=[API_TAG],
         response_model=GetConnectionResponse,
     )
     def get(self, data: GetConnection = Depends(GetConnection)):
-        guacamole_client = Guacamole(
-            hostname=ConfigClass.GUACAMOLE_HOSTNAME,
-            username=ConfigClass.GUACAMOLE_USERNAME,
-            password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
-        )
+        guacamole_client = get_guacamole_client(data.container_code)
         connections = guacamole_client.get_connections()
         result_containers = []
         for connection in connections['childConnections']:
@@ -61,12 +57,7 @@ class Connection:
 
     @router.post('/guacamole/connection', summary='Add a new connection', tags=[API_TAG])
     def post(self, data: PostConnection):
-        guacamole_client = Guacamole(
-            hostname=ConfigClass.GUACAMOLE_HOSTNAME,
-            username=ConfigClass.GUACAMOLE_USERNAME,
-            password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
-        )
+        guacamole_client = get_guacamole_client(data.container_code)
         payload = {
             'name': data.connection_name,
             'parentIdentifier': 'ROOT',
@@ -95,12 +86,7 @@ class Connection:
         response_model=DeleteConnectionResponse,
     )
     def delete(self, data: DeleteConnection = Depends(DeleteConnection)):
-        guacamole_client = Guacamole(
-            hostname=ConfigClass.GUACAMOLE_HOSTNAME,
-            username=ConfigClass.GUACAMOLE_USERNAME,
-            password=ConfigClass.GUACAMOLE_PASSWORD,
-            url_path=ConfigClass.GUACAMOLE_URL_PATH.format(container_code=data.container_code),
-        )
+        guacamole_client = get_guacamole_client(data.container_code)
         connection = guacamole_client.get_connection_by_name(data.connection_name)
         try:
             guacamole_client.delete_connection(connection['identifier'])
