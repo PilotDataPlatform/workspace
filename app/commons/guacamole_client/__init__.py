@@ -1,7 +1,8 @@
-from app.config import ConfigClass
-from app.resources.error_handler import APIException
 from guacapy import Guacamole
+
+from app.config import ConfigClass
 from app.models.base import EAPIResponseCode
+from app.resources.error_handler import APIException
 
 
 def get_guacamole_client(container_code: str) -> Guacamole:
@@ -14,6 +15,6 @@ def get_guacamole_client(container_code: str) -> Guacamole:
         )
     except Exception as e:
         raise APIException(
-            error_msg=f"Error connecting to guacamole: {e}", status_code=EAPIResponseCode.unavailable.value
+            error_msg=f'Error connecting to guacamole: {e}', status_code=EAPIResponseCode.unavailable.value
         )
     return guacamole_client

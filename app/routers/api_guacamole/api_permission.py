@@ -16,13 +16,14 @@ from common import LoggerFactory
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from fastapi_utils.cbv import cbv
-from guacapy import Guacamole
 
-from app.config import ConfigClass
-from app.models.models_permission import (GetPermission, GetPermissionResponse,
-                                          PostPermission)
-from app.resources.error_handler import APIException
 from app.commons.guacamole_client import get_guacamole_client
+from app.models.models_permission import (
+    GetPermission,
+    GetPermissionResponse,
+    PostPermission,
+)
+from app.resources.error_handler import APIException
 
 router = APIRouter()
 API_TAG = 'Permission'

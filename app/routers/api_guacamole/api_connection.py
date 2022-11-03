@@ -15,17 +15,18 @@
 from common import LoggerFactory
 from fastapi import APIRouter, Depends
 from fastapi_utils.cbv import cbv
-from guacapy import Guacamole
 from requests.exceptions import HTTPError
 
-from app.config import ConfigClass
-from app.models.base import APIResponse
-from app.models.models_connection import (DeleteConnection,
-                                          DeleteConnectionResponse,
-                                          GetConnection, GetConnectionResponse,
-                                          PostConnection)
-from app.resources.error_handler import APIException
 from app.commons.guacamole_client import get_guacamole_client
+from app.models.base import APIResponse
+from app.models.models_connection import (
+    DeleteConnection,
+    DeleteConnectionResponse,
+    GetConnection,
+    GetConnectionResponse,
+    PostConnection,
+)
+from app.resources.error_handler import APIException
 
 router = APIRouter()
 API_TAG = 'Connection'
@@ -46,11 +47,13 @@ class Connection:
         connections = guacamole_client.get_connections()
         result_containers = []
         for connection in connections['childConnections']:
-            result_containers.append({
-                'id': connection['identifier'],
-                'name': connection['name'],
-                'protocol': connection['protocol'],
-            })
+            result_containers.append(
+                {
+                    'id': connection['identifier'],
+                    'name': connection['name'],
+                    'protocol': connection['protocol'],
+                }
+            )
         api_response = GetConnectionResponse()
         api_response.result = result_containers
         return api_response.json_response()
