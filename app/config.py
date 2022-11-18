@@ -56,6 +56,29 @@ class Settings(BaseSettings):
     GUACAMOLE_PASSWORD: str
     GUACAMOLE_URL_PATH: str
 
+    LXD_TRUST_PASSWORD: str
+    LXD_CRT: str
+    LXD_KEY: str
+    LXD_HOST: str
+    LXD_PORT: str = 8443
+    LXD_NETWORK: str = 'lxdbr0'
+    LXD_IMAGE_CONFIG: dict = {
+        'type': 'image',
+        'mode': 'pull',
+        'protocol': 'simplestreams',
+        'server': 'https://cloud-images.ubuntu.com/daily',
+        'alias': 'lts/amd64',
+    }
+
+    PORT_RANGE_LOWER: int = 9050
+    PORT_RANGE_UPPER: int = 9999
+
+    RDS_HOST: str = "127.0.0.1"
+    RDS_PORT: str = "5432"
+    RDS_DBNAME: str = "workspace"
+    RDS_USERNAME: str
+    RDS_PASSWORD: str
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
@@ -67,6 +90,10 @@ class Settings(BaseSettings):
 
     def __init__(self, *args: Any, **kwds: Any) -> None:
         super().__init__(*args, **kwds)
+        self.RDS_DB_URI = (
+            f"postgresql://{self.RDS_USERNAME}:{self.RDS_PASSWORD}"
+            f"@{self.RDS_HOST}:{self.RDS_PORT}/{self.RDS_DBNAME}"
+        )
 
 
 @lru_cache(1)

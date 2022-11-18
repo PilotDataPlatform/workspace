@@ -15,6 +15,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi_sqlalchemy import DBSessionMiddleware
 
 from app.resources.error_handler import APIException
 
@@ -31,6 +32,7 @@ def create_app():
         version=ConfigClass.version,
     )
 
+    app.add_middleware(DBSessionMiddleware, db_url=ConfigClass.RDS_DB_URI)
     app.add_middleware(
         CORSMiddleware,
         allow_origins='*',

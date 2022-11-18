@@ -1,0 +1,11 @@
+## template: jinja
+#cloud-config
+ssh_pwauth: true
+packages:
+  - whois
+users:
+  - default
+  - name: lxd_user
+    groups: users
+    passwd: {password_hash}
+    lock_passwd: false

@@ -12,17 +12,18 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from fastapi import FastAPI
-
-from .routers import api_root
-from .routers.api_guacamole import api_connection, api_permission
-from .routers.api_health import api_health
-from .routers.api_lxd import api_lxd
+from pydantic import BaseModel
 
 
-def api_registry(app: FastAPI):
-    app.include_router(api_health.router, prefix='/v1')
-    app.include_router(api_root.router, prefix='/v1')
-    app.include_router(api_connection.router, prefix='/v1')
-    app.include_router(api_permission.router, prefix='/v1')
-    app.include_router(api_lxd.router, prefix='/v1')
+class GetLXD(BaseModel):
+    container_code: str
+    username: str
+
+
+class CreateLXD(BaseModel):
+    container_code: str
+    username: str
+
+
+class GetNetworkForwards(BaseModel):
+    ip_address: str
