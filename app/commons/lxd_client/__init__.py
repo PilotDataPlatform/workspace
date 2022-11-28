@@ -1,8 +1,11 @@
 from pylxd import Client
 from pylxd.exceptions import LXDAPIException, NotFound
 from app.config import ConfigClass
-from app.commons.psql_service import get_available_port, create_lxd_container, delete_instance
+from app.commons.psql_service import create_lxd_container, delete_instance
+from app.resources.error_handler import APIException
+from app.models.base import EAPIResponseCode
 import time
+import random
 
 
 class LXDClient(Client):
@@ -21,7 +24,24 @@ class LXDClient(Client):
     async def get_network(self):
         return self.networks.get(ConfigClass.LXD_NETWORK)
 
-    async def create_instance_and_network_forward(self, config: dict, username: str, project_code: str, target_port: str = 22):
+    async def get_available_port(self):
+        retry = 5
+        while retry:
+            port = random.randrange(ConfigClass.PORT_RANGE_LOWER, ConfigClass.PORT_RANGE_UPPER)
+            forward = await self.get_network_forward()
+            used_ports = [i['listen_port'] for i in forward.ports]
+            if port in used_ports:
+                retry -= 1
+                if retry == 0:
+                    raise APIException(
+                        error_msg="Unable to find free port",
+                        status_code=EAPIResponseCode.internal_error.value
+                    )
+                continue
+            break
+        return port
+
+    async def create_instance_and_network_forward(self, config: dict, username: str, project_code: str):
         instance = self.instances.create(config, wait=True)
         instance.start(wait=True)
         ipv4 = None
@@ -36,40 +56,58 @@ class LXDClient(Client):
                 time.sleep(2)
                 retry += 1
 
-        listen_port = get_available_port()
-        new_port = {
-            "description": f"{instance.name} network forward",
-            "listen_port": str(listen_port),
-            "target_port": str(target_port),
-            "protocol": "tcp",
-            "target_address": ipv4,
-        }
-        network = await self.get_network()
-        forward = network.forwards.get(self.host)
-        ports = forward.ports
-        ports.append(new_port)
-        forward.ports = ports
-        forward.save()
+        for port in [22, 3389]:
+            listen_port = await self.get_available_port()
+            new_port = {
+                "description": f"{instance.name} network forward",
+                "listen_port": str(listen_port),
+                "target_port": str(port),
+                "protocol": "tcp",
+                "target_address": ipv4,
+            }
+            network = await self.get_network()
+            forward = network.forwards.get(self.host)
+            ports = forward.ports
+            ports.append(new_port)
+            forward.ports = ports
+            forward.save()
 
-        create_lxd_container({
-            "username": username,
-            "project_code": project_code,
-            "target_port": target_port,
-            "listen_port": listen_port,
-            "target_address": ipv4,
-            "listen_address": self.host,
-        })
+        #create_lxd_container({
+        #    "username": username,
+        #    "project_code": project_code,
+        #    "target_port": target_port,
+        #    "listen_port": listen_port,
+        #    "target_address": ipv4,
+        #    "listen_address": self.host,
+        #})
         return 'success'
+
+    async def get_instance_address(self, instance) -> str:
+        if instance.state().network:
+            addresses = instance.state().network.get("eth0")["addresses"]
+            for address in addresses:
+                if address.get("family") == "inet":
+                    return address["address"]
+        return None
 
     async def stop_and_delete_instance(self, instance):
         project_code, username = instance.name.split("-")
+        address = await self.get_instance_address(instance)
+        forward = await self.get_network_forward()
+        new_port_data = []
+        for port_data in forward.ports:
+            if port_data['target_address'] != address:
+                new_port_data.append(port_data)
+        forward.ports = new_port_data
+        forward.save()
+
         try:
             instance.stop(wait=True)
         except LXDAPIException:
             # Already stopped
             pass
         instance.delete(wait=True)
-        delete_instance(username, project_code)
+        #delete_instance(username, project_code)
 
     async def get_network_forward(self):
         network = await self.get_network()

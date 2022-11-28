@@ -17,9 +17,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi_sqlalchemy import DBSessionMiddleware
 
+from app.routers import api_root
+from app.routers.api_guacamole import api_connection, api_permission
+from app.routers.api_health import api_health
+from app.routers.api_lxd import api_lxd
+
 from app.resources.error_handler import APIException
 
-from .api_registry import api_registry
 from .config import ConfigClass
 
 
@@ -41,9 +45,7 @@ def create_app():
         allow_headers=['*'],
     )
 
-    # API registry
-    # v1
-    api_registry(app)
+    setup_routers(app)
 
     @app.exception_handler(APIException)
     async def http_exception_handler(request: Request, exc: APIException):
@@ -51,5 +53,12 @@ def create_app():
             status_code=exc.status_code,
             content=exc.content,
         )
-
     return app
+
+
+def setup_routers(app: FastAPI) -> None:
+    app.include_router(api_health.router, prefix='/v1')
+    app.include_router(api_root.router, prefix='/v1')
+    app.include_router(api_connection.router, prefix='/v1')
+    app.include_router(api_permission.router, prefix='/v1')
+    app.include_router(api_lxd.router, prefix='/v1')

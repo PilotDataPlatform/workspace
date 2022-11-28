@@ -2,10 +2,12 @@
 #cloud-config
 ssh_pwauth: true
 packages:
-  - whois
+  - gocryptfs
+  - xrdp
 users:
   - default
   - name: lxd_user
     groups: users
     passwd: {password_hash}
     lock_passwd: false
+    sudo: ALL=(ALL) NOPASSWD:ALL

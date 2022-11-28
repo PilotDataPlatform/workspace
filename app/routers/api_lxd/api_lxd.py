@@ -38,29 +38,27 @@ class LXDManager:
     async def get(self, data: GetLXD = Depends(GetLXD)):
         lxd_client = LXDClient()
         containers = lxd_client.instances.all()
-        api_response = []
         forward = await lxd_client.get_network_forward()
+        search_name = f"{data.container_code}-{data.username}"
+        api_response = ""
         for container in containers:
-            container_data = {
-                "name": container.name,
-                "status": container.status,
-                "ipv4": None,
-                "port_forward": {}
-            }
-            if container.state().network:
-                addresses = container.state().network.get("eth0")["addresses"]
-                for address in addresses:
-                    if address.get("family") == "inet":
-                        container_data["ipv4"] = address["address"]
-            for port_data in forward.ports:
-                if port_data['target_address'] == container_data['ipv4']:
-                    container_data['port_forward'] = {
-                        'listen_port': port_data['listen_port'],
-                        'target_port': port_data['target_port'],
-                        'listen_address': forward.listen_address,
-                        'target_address': port_data['target_address'],
-                    }
-            api_response.append(container_data)
+            if container.name == search_name:
+                container_data = {
+                    "name": container.name,
+                    "status": container.status,
+                    "port_forward": []
+                }
+                host = await lxd_client.get_instance_address(container)
+                for port_data in forward.ports:
+                    if port_data['target_address'] == host:
+                        container_data['port_forward'].append({
+                            'listen_port': port_data['listen_port'],
+                            'target_port': port_data['target_port'],
+                            'listen_address': forward.listen_address,
+                            'target_address': port_data['target_address'],
+                        })
+                api_response = container_data
+                break
         return JSONResponse(api_response)
 
     @router.post(
@@ -71,9 +69,10 @@ class LXDManager:
     async def post(self, data: CreateLXD, background_tasks: BackgroundTasks):
         lxd_client = LXDClient()
         container_name = f"{data.container_code}-{data.username}"
+        password, password_hash = generate_password_hash()
         with open('lxd_cloud_init.yaml', 'r') as f:
             cloud_init_data = f.read()
-        password, password_hash = generate_password_hash()
+
         config = {
             'name': container_name,
             'type': 'container',
@@ -83,6 +82,7 @@ class LXDManager:
                 'user.user-data': cloud_init_data.format(password_hash=password_hash),
             }
         }
+
         #background_tasks.add_task(lxd_client.create_instance_and_network_forward, config)
         await lxd_client.create_instance_and_network_forward(config, data.username, data.container_code)
         api_response = {
