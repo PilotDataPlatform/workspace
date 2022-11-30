@@ -82,7 +82,7 @@ class User:
 
     @router.post(
         '/guacamole/users',
-        summary='Get permissons on a connection for a user',
+        summary='Create a new user in guacamole',
         tags=[API_TAG],
         response_model=CreateUserResponse,
     )
