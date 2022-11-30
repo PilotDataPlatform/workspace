@@ -39,3 +39,12 @@ class PostPermission(BaseModel):
         if v not in ['add', 'remove']:
             raise APIException(error_msg='Invalid operation', status_code=EAPIResponseCode.bad_request)
         return v
+
+
+class CreateUser(BaseModel):
+    container_code: str
+    username: str
+
+
+class CreateUserResponse(APIResponse):
+    result: dict = Field(str, example="success")

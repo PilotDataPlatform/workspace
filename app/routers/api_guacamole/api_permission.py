@@ -22,7 +22,10 @@ from app.models.models_permission import (
     GetPermission,
     GetPermissionResponse,
     PostPermission,
+    CreateUser,
+    CreateUserResponse,
 )
+from app.models.base import EAPIResponseCode
 from app.resources.error_handler import APIException
 
 router = APIRouter()
@@ -71,3 +74,42 @@ class Permission:
                 status_code=response.status_code, error_msg='Error updating guacamole permisisons: {response.json()}'
             )
         return JSONResponse('success')
+
+
+@cbv(router)
+class User:
+    logger = LoggerFactory('api_permisison').get_logger()
+
+    @router.post(
+        '/guacamole/users',
+        summary='Get permissons on a connection for a user',
+        tags=[API_TAG],
+        response_model=CreateUserResponse,
+    )
+    def post(self, data: CreateUser):
+        guacamole_client = get_guacamole_client(data.container_code)
+        payload = {
+            'username': data.username,
+            'attributes': {
+                'access-window-end': None,
+                'access-window-start': None,
+                'disabled': None,
+                'expired': None,
+                'guac-email-address': None,
+                'guac-full-name': None,
+                'guac-organization': None,
+                'guac-organizational-role': None,
+                'timezone': None,
+                'valid-from': None,
+                'valid-until': None
+            }
+        }
+        result = guacamole_client.add_user(payload)
+        if result.get('type') == 'BAD_REQUEST':
+            raise APIException(
+                error_msg='User already exists in guacamole',
+                status_code=EAPIResponseCode.bad_request.value
+            )
+        api_response = CreateUserResponse()
+        api_response.result = 'success'
+        return api_response.json_response()
