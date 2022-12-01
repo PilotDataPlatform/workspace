@@ -48,3 +48,11 @@ class CreateUser(BaseModel):
 
 class CreateUserResponse(APIResponse):
     result: dict = Field(str, example="success")
+
+
+class CreateUserBulk(BaseModel):
+    container_code: str
+
+
+class CreateUserBulkResponse(APIResponse):
+    result: dict = Field(str, example="success")

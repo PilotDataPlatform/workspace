@@ -49,6 +49,8 @@ class Settings(BaseSettings):
     HOST: str = '0.0.0.0'
     PORT: int = 5068
 
+    AUTH_SERVICE: str
+
     WORKSPACE_PREFIX: str = 'workspace'
 
     GUACAMOLE_HOSTNAME: str
@@ -67,6 +69,7 @@ class Settings(BaseSettings):
 
     def __init__(self, *args: Any, **kwds: Any) -> None:
         super().__init__(*args, **kwds)
+        self.AUTH_SERVICE = self.AUTH_SERVICE + '/v1/'
 
 
 @lru_cache(1)

@@ -13,17 +13,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from common import LoggerFactory
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi_utils.cbv import cbv
 
-from app.commons.guacamole_client import get_guacamole_client
+from app.commons.guacamole_client import get_guacamole_client, add_users_bulk
+from app.commons.auth_service import get_project_users
 from app.models.models_permission import (
     GetPermission,
     GetPermissionResponse,
     PostPermission,
     CreateUser,
     CreateUserResponse,
+    CreateUserBulk,
+    CreateUserBulkResponse,
 )
 from app.models.base import EAPIResponseCode
 from app.resources.error_handler import APIException
@@ -110,6 +113,24 @@ class User:
                 error_msg='User already exists in guacamole',
                 status_code=EAPIResponseCode.bad_request.value
             )
+        api_response = CreateUserResponse()
+        api_response.result = 'success'
+        return api_response.json_response()
+
+
+@cbv(router)
+class ProjectUsers:
+    logger = LoggerFactory('api_permisison').get_logger()
+
+    @router.post(
+        '/guacamole/project/users',
+        summary='Create a new user in guacamole',
+        tags=[API_TAG],
+        response_model=CreateUserBulkResponse,
+    )
+    async def post(self, data: CreateUserBulk, background_tasks: BackgroundTasks):
+        users = await get_project_users(data.container_code)
+        background_tasks.add_task(add_users_bulk, users, data.container_code)
         api_response = CreateUserResponse()
         api_response.result = 'success'
         return api_response.json_response()
