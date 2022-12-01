@@ -1,5 +1,6 @@
-from app.config import ConfigClass
 import httpx
+
+from app.config import ConfigClass
 
 
 async def get_project_users(container_code: str) -> list:

@@ -1,10 +1,9 @@
+from common import LoggerFactory
 from guacapy import Guacamole
 
 from app.config import ConfigClass
 from app.models.base import EAPIResponseCode
 from app.resources.error_handler import APIException
-from common import LoggerFactory
-
 
 logger = LoggerFactory('api_guacamole').get_logger()
 
@@ -40,8 +39,8 @@ def add_users_bulk(users: list[str], container_code: str) -> None:
                 'guac-organizational-role': None,
                 'timezone': None,
                 'valid-from': None,
-                'valid-until': None
-            }
+                'valid-until': None,
+            },
         }
         try:
             guacamole_client.add_user(payload)
