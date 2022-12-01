@@ -43,6 +43,7 @@ def add_users_bulk(users: list[str], container_code: str) -> None:
                 'valid-until': None
             }
         }
-        result = guacamole_client.add_user(payload)
-        if result.get('type') == 'BAD_REQUEST':
-            logger.error(result)
+        try:
+            guacamole_client.add_user(payload)
+        except Exception as e:
+            logger.error(f'Error adding user in guacamole: {e}')

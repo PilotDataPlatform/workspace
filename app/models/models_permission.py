@@ -47,7 +47,7 @@ class CreateUser(BaseModel):
 
 
 class CreateUserResponse(APIResponse):
-    result: dict = Field(str, example="success")
+    result: dict = Field("", example="success")
 
 
 class CreateUserBulk(BaseModel):
@@ -55,4 +55,4 @@ class CreateUserBulk(BaseModel):
 
 
 class CreateUserBulkResponse(APIResponse):
-    result: dict = Field(str, example="success")
+    result: dict = Field("", example="success")

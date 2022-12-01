@@ -107,8 +107,10 @@ class User:
                 'valid-until': None
             }
         }
-        result = guacamole_client.add_user(payload)
-        if result.get('type') == 'BAD_REQUEST':
+        try:
+            guacamole_client.add_user(payload)
+        except Exception as e:
+            self.logger.error(f'Error adding user in guacamole: {e}')
             raise APIException(
                 error_msg='User already exists in guacamole',
                 status_code=EAPIResponseCode.bad_request.value
