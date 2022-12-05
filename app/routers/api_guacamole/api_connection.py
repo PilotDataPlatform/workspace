@@ -18,6 +18,7 @@ from fastapi_utils.cbv import cbv
 from requests.exceptions import HTTPError
 
 from app.commons.guacamole_client import get_guacamole_client
+from app.config import ConfigClass
 from app.models.base import APIResponse
 from app.models.models_connection import (
     DeleteConnection,
@@ -27,7 +28,6 @@ from app.models.models_connection import (
     PostConnection,
 )
 from app.resources.error_handler import APIException
-from app.config import ConfigClass
 
 router = APIRouter()
 API_TAG = 'Connection'

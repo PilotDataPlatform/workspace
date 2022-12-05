@@ -19,6 +19,7 @@ from fastapi_utils.cbv import cbv
 
 from app.commons.auth_service import get_project_users
 from app.commons.guacamole_client import add_users_bulk, get_guacamole_client
+from app.config import ConfigClass
 from app.models.base import EAPIResponseCode
 from app.models.models_permission import (
     CreateUser,
@@ -30,7 +31,6 @@ from app.models.models_permission import (
     PostPermission,
 )
 from app.resources.error_handler import APIException
-from app.config import ConfigClass
 
 router = APIRouter()
 API_TAG = 'Permission'
