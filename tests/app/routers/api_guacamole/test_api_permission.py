@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from app.config import ConfigClass
 
 
 def test_get_permission_200(test_client, guacapy_client_mock):
@@ -63,3 +64,54 @@ def test_create_user_400(test_client, guacapy_client_mock_add_user_400):
     }
     response = test_client.post('/v1/guacamole/users', json=payload)
     assert response.status_code == 400
+
+
+def test_create_user_bulk_200(test_client, guacapy_client_mock, httpx_mock):
+    httpx_mock.add_response(
+        method='POST',
+        url=ConfigClass.AUTH_SERVICE + 'admin/roles/users',
+        json={
+            'result': [{'username': 'test'}],
+            'total': 1,
+        }
+    )
+    payload = {
+        'container_code': 'unittest',
+        'username': 'unittest',
+    }
+    response = test_client.post('/v1/guacamole/project/users', json=payload)
+    assert response.status_code == 200
+
+
+def test_create_user_existing_users_200(test_client, guacapy_client_mock_add_user_400, httpx_mock):
+    httpx_mock.add_response(
+        method='POST',
+        url=ConfigClass.AUTH_SERVICE + 'admin/roles/users',
+        json={
+            'result': [{'username': 'test'}],
+            'total': 1,
+        }
+    )
+    payload = {
+        'container_code': 'unittest',
+        'username': 'unittest',
+    }
+    response = test_client.post('/v1/guacamole/project/users', json=payload)
+    assert response.status_code == 200
+
+
+def test_create_user_multiple_pages_200(test_client, guacapy_client_mock, httpx_mock):
+    httpx_mock.add_response(
+        method='POST',
+        url=ConfigClass.AUTH_SERVICE + 'admin/roles/users',
+        json={
+            'result': [{'username': 'test'}],
+            'total': 30,
+        }
+    )
+    payload = {
+        'container_code': 'unittest',
+        'username': 'unittest',
+    }
+    response = test_client.post('/v1/guacamole/project/users', json=payload)
+    assert response.status_code == 200

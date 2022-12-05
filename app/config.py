@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import logging
 from functools import lru_cache
 from typing import Any, Dict, Optional
 
@@ -49,12 +50,19 @@ class Settings(BaseSettings):
     HOST: str = '0.0.0.0'
     PORT: int = 5068
 
+    AUTH_SERVICE: str
+
     WORKSPACE_PREFIX: str = 'workspace'
 
     GUACAMOLE_HOSTNAME: str
     GUACAMOLE_USERNAME: str
     GUACAMOLE_PASSWORD: str
     GUACAMOLE_URL_PATH: str
+
+    LOG_LEVEL_DEFAULT = logging.WARN
+    LOG_LEVEL_FILE = logging.WARN
+    LOG_LEVEL_STDOUT = logging.WARN
+    LOG_LEVEL_STDERR = logging.ERROR
 
     class Config:
         env_file = '.env'
@@ -67,6 +75,7 @@ class Settings(BaseSettings):
 
     def __init__(self, *args: Any, **kwds: Any) -> None:
         super().__init__(*args, **kwds)
+        self.AUTH_SERVICE = self.AUTH_SERVICE + '/v1/'
 
 
 @lru_cache(1)

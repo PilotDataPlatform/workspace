@@ -13,19 +13,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from common import LoggerFactory
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from fastapi_utils.cbv import cbv
 
-from app.commons.guacamole_client import get_guacamole_client
+from app.commons.auth_service import get_project_users
+from app.commons.guacamole_client import add_users_bulk, get_guacamole_client
+from app.config import ConfigClass
+from app.models.base import EAPIResponseCode
 from app.models.models_permission import (
+    CreateUser,
+    CreateUserBulk,
+    CreateUserBulkResponse,
+    CreateUserResponse,
     GetPermission,
     GetPermissionResponse,
     PostPermission,
-    CreateUser,
-    CreateUserResponse,
 )
-from app.models.base import EAPIResponseCode
 from app.resources.error_handler import APIException
 
 router = APIRouter()
@@ -34,7 +38,13 @@ API_TAG = 'Permission'
 
 @cbv(router)
 class Permission:
-    logger = LoggerFactory('api_permisison').get_logger()
+    logger = LoggerFactory(
+        'api_permission',
+        level_default=ConfigClass.LOG_LEVEL_DEFAULT,
+        level_file=ConfigClass.LOG_LEVEL_FILE,
+        level_stdout=ConfigClass.LOG_LEVEL_STDOUT,
+        level_stderr=ConfigClass.LOG_LEVEL_STDERR,
+    ).get_logger()
 
     @router.get(
         '/guacamole/permission',
@@ -78,7 +88,13 @@ class Permission:
 
 @cbv(router)
 class User:
-    logger = LoggerFactory('api_permisison').get_logger()
+    logger = LoggerFactory(
+        'api_permission',
+        level_default=ConfigClass.LOG_LEVEL_DEFAULT,
+        level_file=ConfigClass.LOG_LEVEL_FILE,
+        level_stdout=ConfigClass.LOG_LEVEL_STDOUT,
+        level_stderr=ConfigClass.LOG_LEVEL_STDERR,
+    ).get_logger()
 
     @router.post(
         '/guacamole/users',
@@ -101,15 +117,40 @@ class User:
                 'guac-organizational-role': None,
                 'timezone': None,
                 'valid-from': None,
-                'valid-until': None
-            }
+                'valid-until': None,
+            },
         }
-        result = guacamole_client.add_user(payload)
-        if result.get('type') == 'BAD_REQUEST':
+        try:
+            guacamole_client.add_user(payload)
+        except Exception as e:
+            self.logger.error(f'Error adding user in guacamole: {e}')
             raise APIException(
-                error_msg='User already exists in guacamole',
-                status_code=EAPIResponseCode.bad_request.value
+                error_msg='User already exists in guacamole', status_code=EAPIResponseCode.bad_request.value
             )
+        api_response = CreateUserResponse()
+        api_response.result = 'success'
+        return api_response.json_response()
+
+
+@cbv(router)
+class ProjectUsers:
+    logger = LoggerFactory(
+        'api_permission',
+        level_default=ConfigClass.LOG_LEVEL_DEFAULT,
+        level_file=ConfigClass.LOG_LEVEL_FILE,
+        level_stdout=ConfigClass.LOG_LEVEL_STDOUT,
+        level_stderr=ConfigClass.LOG_LEVEL_STDERR,
+    ).get_logger()
+
+    @router.post(
+        '/guacamole/project/users',
+        summary='Create a new user in guacamole',
+        tags=[API_TAG],
+        response_model=CreateUserBulkResponse,
+    )
+    async def post(self, data: CreateUserBulk, background_tasks: BackgroundTasks):
+        users = await get_project_users(data.container_code)
+        background_tasks.add_task(add_users_bulk, users, data.container_code)
         api_response = CreateUserResponse()
         api_response.result = 'success'
         return api_response.json_response()

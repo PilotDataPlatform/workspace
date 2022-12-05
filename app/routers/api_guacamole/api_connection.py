@@ -18,6 +18,7 @@ from fastapi_utils.cbv import cbv
 from requests.exceptions import HTTPError
 
 from app.commons.guacamole_client import get_guacamole_client
+from app.config import ConfigClass
 from app.models.base import APIResponse
 from app.models.models_connection import (
     DeleteConnection,
@@ -34,7 +35,13 @@ API_TAG = 'Connection'
 
 @cbv(router)
 class Connection:
-    logger = LoggerFactory('api_guacamole').get_logger()
+    logger = LoggerFactory(
+        'api_guacamole',
+        level_default=ConfigClass.LOG_LEVEL_DEFAULT,
+        level_file=ConfigClass.LOG_LEVEL_FILE,
+        level_stdout=ConfigClass.LOG_LEVEL_STDOUT,
+        level_stderr=ConfigClass.LOG_LEVEL_STDERR,
+    ).get_logger()
 
     @router.get(
         '/guacamole/connection',

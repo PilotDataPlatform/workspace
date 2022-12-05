@@ -74,7 +74,8 @@ def guacapy_mock(mocker, response_code=204, connection_exception=False, init_exc
 
         def add_user(self, *args, **kwargs):
             if add_user_exception:
-                return {"type": "BAD_REQUEST"}
+                response = MockResponse(response_code=400)
+                raise HTTPError('', 400, 'Testing', response=response)
             return {}
 
     mocker.patch('app.commons.guacamole_client.Guacamole', GuacapyClientMock)
