@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import logging
 from functools import lru_cache
 from typing import Any, Dict, Optional
 
@@ -57,6 +58,11 @@ class Settings(BaseSettings):
     GUACAMOLE_USERNAME: str
     GUACAMOLE_PASSWORD: str
     GUACAMOLE_URL_PATH: str
+
+    LOG_LEVEL_DEFAULT = logging.WARN
+    LOG_LEVEL_FILE = logging.WARN
+    LOG_LEVEL_STDOUT = logging.WARN
+    LOG_LEVEL_STDERR = logging.ERROR
 
     class Config:
         env_file = '.env'

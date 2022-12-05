@@ -30,6 +30,7 @@ from app.models.models_permission import (
     PostPermission,
 )
 from app.resources.error_handler import APIException
+from app.config import ConfigClass
 
 router = APIRouter()
 API_TAG = 'Permission'
@@ -37,7 +38,13 @@ API_TAG = 'Permission'
 
 @cbv(router)
 class Permission:
-    logger = LoggerFactory('api_permisison').get_logger()
+    logger = LoggerFactory(
+        'api_permission',
+        level_default=ConfigClass.LOG_LEVEL_DEFAULT,
+        level_file=ConfigClass.LOG_LEVEL_FILE,
+        level_stdout=ConfigClass.LOG_LEVEL_STDOUT,
+        level_stderr=ConfigClass.LOG_LEVEL_STDERR,
+    ).get_logger()
 
     @router.get(
         '/guacamole/permission',
@@ -81,7 +88,13 @@ class Permission:
 
 @cbv(router)
 class User:
-    logger = LoggerFactory('api_permisison').get_logger()
+    logger = LoggerFactory(
+        'api_permission',
+        level_default=ConfigClass.LOG_LEVEL_DEFAULT,
+        level_file=ConfigClass.LOG_LEVEL_FILE,
+        level_stdout=ConfigClass.LOG_LEVEL_STDOUT,
+        level_stderr=ConfigClass.LOG_LEVEL_STDERR,
+    ).get_logger()
 
     @router.post(
         '/guacamole/users',
@@ -121,7 +134,13 @@ class User:
 
 @cbv(router)
 class ProjectUsers:
-    logger = LoggerFactory('api_permisison').get_logger()
+    logger = LoggerFactory(
+        'api_permission',
+        level_default=ConfigClass.LOG_LEVEL_DEFAULT,
+        level_file=ConfigClass.LOG_LEVEL_FILE,
+        level_stdout=ConfigClass.LOG_LEVEL_STDOUT,
+        level_stderr=ConfigClass.LOG_LEVEL_STDERR,
+    ).get_logger()
 
     @router.post(
         '/guacamole/project/users',

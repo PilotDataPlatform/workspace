@@ -27,6 +27,7 @@ from app.models.models_connection import (
     PostConnection,
 )
 from app.resources.error_handler import APIException
+from app.config import ConfigClass
 
 router = APIRouter()
 API_TAG = 'Connection'
@@ -34,7 +35,13 @@ API_TAG = 'Connection'
 
 @cbv(router)
 class Connection:
-    logger = LoggerFactory('api_guacamole').get_logger()
+    logger = LoggerFactory(
+        'api_guacamole',
+        level_default=ConfigClass.LOG_LEVEL_DEFAULT,
+        level_file=ConfigClass.LOG_LEVEL_FILE,
+        level_stdout=ConfigClass.LOG_LEVEL_STDOUT,
+        level_stderr=ConfigClass.LOG_LEVEL_STDERR,
+    ).get_logger()
 
     @router.get(
         '/guacamole/connection',
