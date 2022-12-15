@@ -66,7 +66,7 @@ class LXDClient(Client):
                 "target_address": ipv4,
             }
             network = await self.get_network()
-            forward = network.forwards.get(self.host)
+            forward = network.forwards.get(ConfigClass.LXD_LISTEN_ADDRESS)
             ports = forward.ports
             ports.append(new_port)
             forward.ports = ports
@@ -112,7 +112,7 @@ class LXDClient(Client):
     async def get_network_forward(self):
         network = await self.get_network()
         try:
-            forward = network.forwards.get(self.host)
+            forward = network.forwards.get(ConfigClass.LXD_LISTEN_ADDRESS)
         except NotFound:
             return []
         return forward
@@ -123,7 +123,7 @@ class LXDClient(Client):
         config = {
             "config": {},
             "description": "workspace test",
-            "listen_address": self.host,
+            "listen_address": ConfigClass.LXD_LISTEN_ADDRESS,
             "ports": []
         }
         forward = network.forwards.create(config=config, wait=True)

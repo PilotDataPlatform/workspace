@@ -79,7 +79,10 @@ class LXDManager:
             'source': ConfigClass.LXD_IMAGE_CONFIG,
             'config': {
                 'user.meta-data': f'password: {password_hash}',
-                'user.user-data': cloud_init_data.format(password_hash=password_hash),
+                'user.user-data': cloud_init_data.format(
+                    password_hash=password_hash,
+                    hostname=container_name + ".example.org"
+                ),
             }
         }
 

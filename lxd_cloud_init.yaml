@@ -1,9 +1,6 @@
 ## template: jinja
 #cloud-config
 ssh_pwauth: true
-packages:
-  - gocryptfs
-  - xrdp
 users:
   - default
   - name: lxd_user

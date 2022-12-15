@@ -64,14 +64,12 @@ class Settings(BaseSettings):
     LXD_NETWORK: str = 'lxdbr0'
     LXD_IMAGE_CONFIG: dict = {
         'type': 'image',
-        'mode': 'pull',
-        'protocol': 'simplestreams',
-        'server': 'https://cloud-images.ubuntu.com/daily',
-        'alias': 'lts/amd64',
+        'alias': 'indoc_ubuntu_22_04_xfce4',
     }
+    LXD_LISTEN_ADDRESS: str
 
-    PORT_RANGE_LOWER: int = 9050
-    PORT_RANGE_UPPER: int = 9999
+    PORT_RANGE_LOWER: int = 9000
+    PORT_RANGE_UPPER: int = 9500
 
     RDS_HOST: str = "127.0.0.1"
     RDS_PORT: str = "5432"
